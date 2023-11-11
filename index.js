@@ -32,6 +32,56 @@ async function run() {
         const myBids = client.db('careerCenterDB').collection('bids');
         const googleUserCollection = client.db('careerCenterDB').collection('googleUser');
 
+
+        app.patch('/jobs/:id', async (req, res) => {
+            const jobId = req.params.id;
+            const updatedJob = req.body;
+
+            if (!ObjectId.isValid(jobId)) {
+                console.error('Invalid ObjectId:', jobId);
+                return res.status(400).send('Invalid ObjectId');
+            }
+
+            try {
+                const result = await jobsCollection.updateOne({ _id: new ObjectId(jobId) }, { $set: updatedJob });
+                res.send(result);
+            } catch (error) {
+                console.error('Error updating job:', error);
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
+
+        app.get('/myJobs', async (req, res) => {
+            const userEmail = req.query.email;
+            try {
+                const result = await jobsCollection.find({ email: userEmail }).toArray();
+                res.send(result);
+            } catch (error) {
+                console.error('Error fetching user jobs:', error);
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
+        app.get('/jobs/:id', async (req, res) => {
+            const jobId = req.params.id;
+            const objectId = new ObjectId(jobId);
+            const result = await jobsCollection.findOne({ _id: objectId });
+            res.send(result);
+        })
+
+        app.delete('/jobs/:id', async (req, res) => {
+            const jobId = req.params.id;
+            // console.log(jobId);
+            try {
+                const result = await jobsCollection.deleteOne({ _id: new ObjectId(jobId) });
+                res.send(result);
+            } catch (error) {
+                console.error('Error deleting job:', error);
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
         app.post("/myBids", async (req, res) => {
             const data = req.body;
             const result = myBids.insertOne(data);
@@ -62,9 +112,14 @@ async function run() {
         })
 
         app.get('/jobs', async (req, res) => {
-            const cursor = jobsCollection.find();
-            const result = await cursor.toArray();
-            res.send(result);
+            try {
+                const cursor = jobsCollection.find();
+                const result = await cursor.toArray();
+                res.send(result);
+            } catch (error) {
+                console.error('Error fetching jobs:', error);
+                res.status(500).send('Internal Server Error');
+            }
 
         });
 
