@@ -72,7 +72,7 @@ async function run() {
 
         app.delete('/jobs/:id', async (req, res) => {
             const jobId = req.params.id;
-            // console.log(jobId);
+            
             try {
                 const result = await jobsCollection.deleteOne({ _id: new ObjectId(jobId) });
                 res.send(result);
@@ -172,7 +172,7 @@ async function run() {
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
-        // Ensures that the client will close when you finish/error
+      
         // await client.close();
     }
 }
